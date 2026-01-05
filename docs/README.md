@@ -19,9 +19,9 @@ or workflows to the public Espruino repository.
 
 | Script | Purpose |
 | --- | --- |
-| `/home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh` | Activate ESP-IDF v4.4.8 (exports `IDF_PATH` and environment). |
-| `/home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf5.2.2.sh` | Activate ESP-IDF v5.2.2 (installed but not used in the current workflow). |
-| `/home/simon/dev/espruino/espruino-SGA-toolchain/scripts/flash-espruino-c3.sh` | Flash helper for ESP32-C3 builds using esptool from IDF v4.4.8. |
+| `scripts/idf4.4.8.sh` | Activate ESP-IDF v4.4.8 (exports `IDF_PATH` and environment). |
+| `scripts/idf5.2.2.sh` | Activate ESP-IDF v5.2.2 (installed but not used in the current workflow). |
+| `scripts/flash-espruino-c3.sh` | Flash helper for ESP32-C3 builds using esptool from IDF v4.4.8. |
 
 Status:
 

@@ -9,6 +9,24 @@ workflows stay private.
 - `docs/` - Setup references, workflows, troubleshooting, and handover notes.
 - `scripts/` - Small shell helpers for activating IDF versions and flashing.
 
+## Assumptions
+
+Scripts default to the local paths used during setup (see each script header).
+If your environment differs, set the documented environment overrides or adjust
+the paths in place.
+
+## Bootstrap order
+
+1) Clone this repo to your toolchain root (for example, `<TOOLCHAIN_ROOT>`).
+2) Install ESP-IDF versions under `~/dev/esp`.
+3) Create Espruino worktrees under `~/dev/espruino`.
+
+## Quick start
+
+1) Start with `docs/Toolchain-Setup-Reference.md` to validate the toolchain.
+2) Follow `docs/workflow-structure.md` for the build/flash flow.
+3) Use `docs/Troubleshooting-Matrix.md` if you hit errors.
+
 ## Documentation index
 
 | Document | Purpose |
@@ -27,3 +45,9 @@ workflows stay private.
 | `scripts/idf4.4.8.sh` | Activate ESP-IDF v4.4.8 (exports `IDF_PATH` and environment). |
 | `scripts/idf5.2.2.sh` | Activate ESP-IDF v5.2.2 (installed but not used in the current workflow). |
 | `scripts/flash-espruino-c3.sh` | Flash helper for ESP32-C3 builds using esptool from IDF v4.4.8. |
+
+Notes:
+
+- `scripts/flash-espruino-c3.sh` supports overrides via `ESPRUINO_PORT`,
+  `ESPRUINO_ROOT`, `ESPRUINO_IDF`, and `ESPRUINO_PY`.
+- `scripts/idf4.4.8.sh` and `scripts/idf5.2.2.sh` respect `IDF_PATH` if set.

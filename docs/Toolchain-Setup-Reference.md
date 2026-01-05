@@ -12,7 +12,7 @@ It complements:
 - `workflow-structure.md` (main Espruino workflow)
 - `wsl-usb-setup.md` (USB & flashing under WSL)
 
-whcih can be found in /home/simon/dev/espruino/espruino-SGA-toolchain/docs/
+which can be found in this repo under `docs/`.
 
 This document focuses on:
 - Host OS preparation
@@ -23,6 +23,22 @@ This document focuses on:
 - Validation steps
 
 The resulting environment **successfully builds and flashes Espruino** for ESP32-C3 under WSL.
+
+---
+
+## 1.1 Bootstrap Order (Recommended)
+
+To restore the workflow from scratch:
+
+1. Clone this toolchain repo to:
+   `<TOOLCHAIN_ROOT>`
+2. Install ESP-IDF versions under:
+   `~/dev/esp`
+3. Create Espruino worktrees under:
+   `~/dev/espruino`
+
+This keeps toolchain scripts and docs versioned, while ESP-IDF stays outside
+the repo and can be reinstalled as needed.
 
 ---
 
@@ -187,22 +203,11 @@ This installs:
 
 ### 6.3 ESP-IDF v4.4.8 Activation Script (Custom)
 
-Create a **manual activation helper**:
+Activation helpers are tracked in this repo under `scripts/`.
+Ensure they are executable and source them when needed:
 
-    cat > ~/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh <<'EOF'
-    #!/usr/bin/env bash
-    set -e
-    export IDF_PATH="$HOME/dev/esp/esp-idf-v4.4.8"
-    . "$IDF_PATH/export.sh" >/dev/null 2>&1
-    echo "ESP-IDF enabled: $IDF_PATH"
-    idf.py --version
-    EOF
-
-    chmod +x ~/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
-
-Use it explicitly (never auto-source):
-
-    source ~/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
+    chmod +x <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
 
 ---
 
@@ -217,7 +222,7 @@ Installed for future work:
 
 Activation script (optional, not used in this thread):
 
-    ~/dev/espruino/espruino-SGA-toolchain/scripts/idf5.2.2.sh
+    <TOOLCHAIN_ROOT>/scripts/idf5.2.2.sh
 
 Important:
 - IDF versions are **never switched implicitly**
@@ -310,7 +315,7 @@ This installs:
 
 ### 9.1 Environment Setup
 
-    source ~/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
     cd ~/dev/espruino/Espruino-fix-2649
 
 ---
@@ -331,7 +336,7 @@ Flashing was performed **outside idf.py**, using esptool directly.
 
 ### 10.1 Flash Script Location
 
-    ~/dev/espruino/espruino-SGA-toolchain/scripts/flash-espruino-c3.sh
+    <TOOLCHAIN_ROOT>/scripts/flash-espruino-c3.sh
 
 This script uses:
 - esptool from IDF v4.4.8
@@ -339,7 +344,7 @@ This script uses:
 
 ### 10.2 Invocation
 
-    ~/dev/espruino/espruino-SGA-toolchain/scripts/flash-espruino-c3.sh /dev/ttyUSB0 ~/dev/espruino/Espruino-fix-2649
+    <TOOLCHAIN_ROOT>/scripts/flash-espruino-c3.sh /dev/ttyUSB0 ~/dev/espruino/Espruino-fix-2649
 
 This approach:
 - Avoids CMake target confusion

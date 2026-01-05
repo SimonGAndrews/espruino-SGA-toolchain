@@ -23,7 +23,7 @@ It is intended as a **fast diagnostic reference** when something breaks.
 | VS Code terminal closes immediately | Broken shell startup file | `bash -lic 'echo ok'` | Fix syntax errors in `~/.profile` or `~/.bashrc` |
 | `bash: syntax error near unexpected token fi` | Extra `fi` in profile | `nl -ba ~/.profile` | Remove stray `fi`, rebuild file cleanly |
 | `exit code: 1` when opening terminal | Shell returns non-zero on login | `bash --noprofile --norc` | Remove `exit`, `return`, or `set -e` from login scripts |
-| `idf.py: command not found` | IDF not sourced | `echo $IDF_PATH` | `source ~/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh` |
+| `idf.py: command not found` | IDF not sourced | `echo $IDF_PATH` | `source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh` |
 
 ---
 
@@ -121,7 +121,7 @@ When things are badly broken:
    - `usbipd detach --busid X-Y`
    - Reattach device
 3. Open fresh WSL terminal
-4. `source ~/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh`
+4. `source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh`
 5. Flash via esptool script
 6. Monitor via `picocom`
 

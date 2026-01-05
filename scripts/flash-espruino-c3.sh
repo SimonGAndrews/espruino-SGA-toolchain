@@ -1,17 +1,33 @@
 #!/usr/bin/env bash
 set -e
 
-PORT="${1:-/dev/ttyUSB0}"
-ROOT="${2:-/home/simon/dev/espruino/Espruino-fix-2649}"
+# Overrides (args take priority over env vars).
+PORT="${1:-${ESPRUINO_PORT:-/dev/ttyUSB0}}"
+ROOT="${2:-${ESPRUINO_ROOT:-/home/simon/dev/espruino/Espruino-fix-2649}}"
 BUILD="$ROOT/bin/build"
-IDF="/home/simon/dev/esp/esp-idf-v4.4.8"
-PY="/home/simon/.espressif/python_env/idf4.4_py3.10_env/bin/python"
+IDF="${ESPRUINO_IDF:-/home/simon/dev/esp/esp-idf-v4.4.8}"
+PY="${ESPRUINO_PY:-/home/simon/.espressif/python_env/idf4.4_py3.10_env/bin/python}"
 
 if [ ! -r "$PORT" ]; then
   echo "ERROR: Port not readable: $PORT"
   ls -l "$PORT" 2>/dev/null || true
   echo "If needed:"
   echo "  sudo chgrp dialout $PORT && sudo chmod 660 $PORT"
+  exit 1
+fi
+
+if [ ! -d "$BUILD" ]; then
+  echo "ERROR: Build directory not found: $BUILD"
+  exit 1
+fi
+
+if [ ! -x "$PY" ]; then
+  echo "ERROR: Python not found or not executable: $PY"
+  exit 1
+fi
+
+if [ ! -f "$IDF/components/esptool_py/esptool/esptool.py" ]; then
+  echo "ERROR: esptool not found under: $IDF"
   exit 1
 fi
 

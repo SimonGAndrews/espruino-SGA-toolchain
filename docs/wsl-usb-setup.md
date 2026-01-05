@@ -22,7 +22,7 @@ The focus is on:
 
 This document complements the main workflow documentation located at:
 
-    /home/simon/dev/espruino/espruino-SGA-toolchain/docs
+    <TOOLCHAIN_ROOT>/docs
 
 ---
 

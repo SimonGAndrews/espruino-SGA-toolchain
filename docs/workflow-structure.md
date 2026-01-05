@@ -5,20 +5,21 @@
 
 ## 1. Purpose & Scope
 
-This document defines a known-good, repeatable workflow for building and flashing Espruino on ESP32-C3 devices using:
+This document defines a known-good, repeatable workflow for building and flashing Espruino on targets including Espressif devices  (eg ESP32-C3) using:
 
 * Windows 11
 * WSL2 (Ubuntu 22.04)
 * ESP-IDF v4.4.8
 * Espruino’s native Makefile-based build system
 
-The goal is to provide a stable, low-friction development loop that:
+The goal is to provide a stable, easy to use development loop that:
 
 * Uses ESP-IDF only as a toolchain
 * Avoids ESP-IDF project generation
 * Avoids CMake / idf.py target management conflicts
 * Works reliably under WSL2
-* Scales to multiple worktrees and future targets
+* Scales to multiple worktrees and future targets#
+* Builds all Espruino targets
 
 This workflow has been validated end-to-end with successful builds and flashing.
 
@@ -38,7 +39,7 @@ This workflow has been validated end-to-end with successful builds and flashing.
 * Espressif-managed Python virtual environment
 * esptool.py from ESP-IDF v4.4.8
 
-### Target Hardware
+### Example Target Hardware
 * ESP32-C3
 * USB-Serial via:
   * CH340
@@ -47,6 +48,30 @@ This workflow has been validated end-to-end with successful builds and flashing.
 ---
 
 ## 3. Repository Layout & Worktrees
+
+This toolchain uses Git worktrees so each branch can live in its own
+development folder. A worktree is a full checkout that points at a specific
+branch in the local Espruino repo, letting you keep multiple branches
+side-by-side without recloning or switching back and forth. As changes are
+developed in a branch, they can then be pushed up to the master Espruino remote
+repository.
+
+The toolchain docs and scripts are kept in a separate repo:
+
+    <TOOLCHAIN_ROOT>
+
+    eg ~/dev/espruino/espruino-SGA-toolchain
+
+Bootstrap order for a clean restore:
+
+1. Clone the toolchain repo
+
+   ```bash
+   git clone https://github.com/SimonGAndrews/espruino-SGA-toolchain <TOOLCHAIN_ROOT>
+   ```
+2. Install ESP-IDF under `~/dev/esp`
+   See `docs/Toolchain-Setup-Reference.md` for the full install steps.
+3. Create Espruino worktrees under `~/dev/espruino`
 
 The local Espruino checkout uses a bare repository with multiple worktrees.
 
@@ -80,7 +105,7 @@ ESP-IDF environments are activated using small helper scripts.
 
 Example (IDF 4.4.8):
 
-    /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
+    <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
 
 This script:
 * Sets IDF_PATH
@@ -92,7 +117,7 @@ IDF scripts must be sourced, not executed.
 
 Example:
 
-    source /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
 
 ---
 
@@ -142,7 +167,7 @@ A versioned release bundle is also produced under:
 
 ---
 
-## 6. Flashing Strategy (Authoritative)
+## 6. Flashing Strategy (Trusted Method)
 
 ### 6.1 Rationale
 
@@ -164,7 +189,7 @@ A helper script standardises flashing across worktrees.
 
 Location:
 
-    /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/flash-espruino-c3.sh
+    <TOOLCHAIN_ROOT>/scripts/flash-espruino-c3.sh
 
 Arguments:
 1. Serial port (default: /dev/ttyUSB0)
@@ -208,7 +233,7 @@ This is the recommended daily loop.
 
 ### Step 1: Enable ESP-IDF
 
-    source /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
 
 ### Step 2: Build Espruino
 
@@ -217,7 +242,7 @@ This is the recommended daily loop.
 
 ### Step 3: Flash Firmware
 
-    /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/flash-espruino-c3.sh \
+    <TOOLCHAIN_ROOT>/scripts/flash-espruino-c3.sh \
       /dev/ttyUSB0 \
       ~/dev/espruino/Espruino-fix-2649
 

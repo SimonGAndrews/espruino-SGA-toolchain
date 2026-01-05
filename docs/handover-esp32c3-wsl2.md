@@ -17,7 +17,7 @@ debugging.
 
 A full reference workflow document exists at:
 
-    /home/simon/dev/espruino/Espruino-master/readme.md
+    <TOOLCHAIN_ROOT>/docs/workflow-structure.md
 
 This handover summarizes and contextualizes that document.
 
@@ -59,8 +59,8 @@ Each version is enabled explicitly via a shell script.
 
 ### ESP-IDF Enable Scripts
 
-- `/home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh`
-- `/home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf5.2.2.sh`
+- `<TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh`
+- `<TOOLCHAIN_ROOT>/scripts/idf5.2.2.sh`
 
 These scripts:
 
@@ -70,7 +70,7 @@ These scripts:
 
 They must be sourced, not executed:
 
-    source /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/idf4.4.8.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
 
 ### Python
 
@@ -92,6 +92,9 @@ They must be sourced, not executed:
 ## Repository and Worktree Layout
 
 The Espruino repository is managed using a bare repo plus worktrees approach.
+The toolchain docs and scripts live separately at:
+
+    <TOOLCHAIN_ROOT>
 
 Canonical layout:
 
@@ -108,7 +111,7 @@ Key points:
 
 ---
 
-## Build Strategy (Authoritative)
+## Build Strategy (Trusted Method)
 
 ### Philosophy
 
@@ -148,7 +151,7 @@ Always use the flash command emitted by the Espruino build.
 
 ---
 
-## Flash Strategy (Authoritative)
+## Flash Strategy (Trusted Method)
 
 ### Flash Command Source
 
