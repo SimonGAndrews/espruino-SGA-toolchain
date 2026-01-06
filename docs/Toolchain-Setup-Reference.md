@@ -377,3 +377,100 @@ Known limitations (documented elsewhere):
 - Monitoring: pending finalisation
 
 This document represents the **baseline reference toolchain** for ongoing Espruino development in this project.
+
+---
+
+## 13. Appendix - VS Code Workspace and Shortcut
+
+This project uses a [multi-root VS Code workspace](https://code.visualstudio.com/docs/editing/workspaces/workspaces) so the toolchain repo and all
+Espruino worktrees are open side-by-side in one VScode window.
+
+### 13.1 Workspace Architecture
+
+VSCode Workspace file contents:
+
+    <TOOLCHAIN_ROOT>/../espruino.code-workspace
+
+``` powershell
+{
+  "folders": [
+    {
+      "path": "/home/simon/dev/espruino/espruino-SGA-toolchain"
+    },
+    {
+      "path": "/home/simon/dev/espruino/Espruino-fix-2609"
+    },
+    {
+      "path": "/home/simon/dev/espruino/Espruino-SGA-Sandbox"
+    },
+    {
+      "path": "/home/simon/dev/espruino/Espruino-fix-2649"
+    },
+    {
+      "path": "/home/simon/dev/espruino/Espruino-master"
+    }
+  ],
+  "settings": {}
+}
+```
+Add additional paths in the file , to include further branches in the VScode environment.
+
+This keeps the toolchain repo separate from the Espruino worktrees, while
+letting Source Control show each repo in a single VS Code instance.
+
+### 13.2 Windows Shortcut (Open in WSL)
+
+Create a desktop shortcut that launches the workspace directly in WSL:
+
+Target:
+
+    "C:\Users\simon\AppData\Local\Programs\Microsoft VS Code\Code.exe" --remote wsl+Ubuntu-22.04 "/home/simon/dev/espruino/espruino.code-workspace"
+
+Notes:
+- Requires the "Remote - WSL" extension in VS Code.
+- If the workspace paths change, update the shortcut target accordingly.
+
+---
+
+## 14. Appendix - Quick Reference
+
+This section captures the Windows PowerShell commands used to manage WSL
+during installation and recovery.
+
+### 14.1 WSL PowerShell Commands
+
+List installed distributions with status and WSL version:
+
+```powershell
+wsl -l -v
+```
+
+List installed distributions (verbose listing):
+
+```powershell
+wsl --list --verbose
+```
+
+Start the default WSL distribution:
+
+```powershell
+wsl
+```
+
+Start a specific distribution (Ubuntu 22.04):
+
+```powershell
+wsl -d Ubuntu-22.04
+```
+
+Shut down all WSL instances:
+
+```powershell
+wsl --shutdown
+```
+
+Terminate a specific distribution:
+
+```powershell
+wsl -t Ubuntu-22.04
+```
