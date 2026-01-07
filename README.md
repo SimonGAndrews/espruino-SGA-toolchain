@@ -1,8 +1,7 @@
 # Espruino SGA Toolchain
 
-Local documentation and helper scripts for Espruino development work, kept
-separate from upstream Espruino repositories so internal setup notes and
-workflows stay private.
+Documentation and helper scripts for Espruino development work under MS Mindows WSL in VScode, kept
+separate from upstream Espruino repository. 
 
 ## Repository structure
 
@@ -17,9 +16,10 @@ the paths in place.
 
 ## Bootstrap order
 
-1) Clone this repo to your toolchain root (for example, `<TOOLCHAIN_ROOT>`).
-2) Install ESP-IDF versions under `~/dev/esp`.
-3) Create Espruino worktrees under `~/dev/espruino`.
+1) Clone this repo to your toolchain root 
+2) (for example, `<TOOLCHAIN_ROOT>` or  ~/dev/espruino/espruino-SGA-toolchain).
+3) Install ESP-IDF versions under `~/dev/esp`.
+4) Create Espruino worktrees under `~/dev/espruino`.
 
 ## Quick start
 
