@@ -3,6 +3,9 @@
 Documentation and helper scripts for Espruino development work under MS Mindows WSL in VScode, kept
 separate from upstream Espruino repository. 
 
+Status - Operational toolchain testede with Espruino for ESP32C3 build and flash.
+See /docs/workflow-structure.md for workflow details.
+
 ## Repository structure
 
 - `docs/` - Setup references, workflows, troubleshooting, and handover notes.

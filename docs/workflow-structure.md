@@ -14,9 +14,8 @@ This document defines a known-good, repeatable workflow for building and flashin
 
 The goal is to provide a stable, easy to use development loop that:
 
-* Uses ESP-IDF only as a toolchain
-* Avoids ESP-IDF project generation
-* Avoids CMake / idf.py target management conflicts
+* Avoids ESP-IDF project generation and utilises Espruino make
+* Includes different ESP-IDF version setup in the toolchain
 * Works reliably under WSL2
 * Scales to multiple worktrees and future targets#
 * Builds all Espruino targets
@@ -71,6 +70,7 @@ Bootstrap order for a clean restore:
    ```
 2. Install ESP-IDF under `~/dev/esp`
    See `docs/Toolchain-Setup-Reference.md` for the full install steps.
+
 3. Create Espruino worktrees under `~/dev/espruino`
 
 The local Espruino checkout uses a bare repository with multiple worktrees.
@@ -119,6 +119,8 @@ Example:
 
     source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
 
+See also the comments in the script source for optional usage patterns
+
 ---
 
 ## 5. Espruino Build Process
@@ -134,22 +136,55 @@ Builds must not be run from:
 * bin/
 * bin/build/
 
-### 5.2 Build Command
+### 5.2 Establishing build prerequisites
 
-The authoritative build command is:
+Espruino provides a provisioning helper:
+
+    source scripts/provision.sh {BOARD}
+	eg source ./scripts/provision.sh ESP32C3_IDF4
+
+which sets up the depencencies necessary for a given board's build in Espruino. It Sets up toolchain and libraries for build targets, installing them if missing.  It also sets env vars for builds.
+
+However, this toolchain does not rely on this provisioning script , for ESP-IDF builds, because ESP-IDF is installed/set-up separately and enabled via `scripts/idf4.4.8.sh` as above. 
+
+The provisioning helper remains the upstream Espruino mechanism for setting up non ESP-IDF board dependencies (including the original ESP32).  The use of this Espruino provisioning is compatible here, but it will download and maintain its own/another ESP-IDF/toolchain copy inside the Espruino
+worktree for the ESP-IDF boards. 
+
+### 5.3 Build Command
+
+The authoritative Espruino build command is:
 
     make BOARD=ESP32C3_IDF4
 
-This command:
+or When switching boards or ESP-IDF versions, run a clean build first to avoid stale outputs:
 
-* Selects the correct ESP-IDF integration
-* Generates sdkconfig, partition tables, and linker scripts
-* Invokes ESP-IDF internally as required
-* Produces flash-ready binaries
+    make clean
+    make BOARD=ESP32C3_IDF4
+
+This command executes the main Espruino Makefile for the specific board.  It :
+* Selects the correct ESP-IDF integration: 
+  - BOARD maps to ESP32C3_IDF4 makefiles and the ESP-IDF v4 toolchain paths. (See Appendix A)
+* Generates sdkconfig, partition tables, and linker scripts: 
+    - the ESP‑IDF tools (run by the Espruino build) auto‑create these config and layout files inside the build folder so you don’t have to make them by hand.
+* Invokes ESP‑IDF internally as required: 
+    - the Espruino make files call ESP‑IDF’s build system (idf.py) for you; you never have to run idf.py yourself.
+* Produces flash-ready binaries 
+    - the build creates the ELF, then uses esptool/elf2image to emit bootloader and app BINs.
+
+See Appendix 2 for the ESP32-C3 make targets and variables used by this build.
 
 No direct use of idf.py build is required or recommended.
 
-### 5.3 Build Outputs
+Debug and release options (Makefile flags):
+- `DEBUG=1` adds debug symbols (`-g`) and keeps debug-friendly settings.
+- `RELEASE=1` forces release-style compile (no asserts, etc).
+
+Examples:
+
+    DEBUG=1 make BOARD=ESP32C3_IDF4
+    RELEASE=1 make BOARD=ESP32C3_IDF4
+
+### 5.4 Build Outputs
 
 Build artifacts are generated under:
 
@@ -316,3 +351,217 @@ Status:
 * Build validated
 * Flash validated
 * Monitor finalisation pending
+
+---
+
+## Appendix A - Makefile Trace Summary (Board to ESP-IDF Config)
+
+Exact chain in the makefile scripts, with file/line refs:
+
+Board selects family/part
+- `boards/ESP32C3_IDF4.py` (lines 82-85) sets `chip['part']="ESP32C3"` and `chip['family']="ESP32_IDF4"`.
+
+Makefile pulls those values into the build
+- `Makefile` (lines 195-197) runs `get_makefile_decls.py $(BOARD)` and includes `CURRENT_BOARD.make`.
+- `scripts/get_makefile_decls.py` (lines 47-52) prints `FAMILY=<chip family>` and `CHIP=<chip part>` into that file.
+
+Family makefile is then included
+- `Makefile` (lines 721-722) includes `make/family/$(FAMILY).make`, so for this board it includes `make/family/ESP32_IDF4.make`.
+- `make/family/ESP32_IDF4.make` (line 5) sets `ESP32_IDF4=1`.
+
+Target makefile is selected based on ESP32_IDF4
+- `Makefile` (lines 894-895) includes `make/targets/ESP32_IDF4.make` when `ESP32_IDF4` is defined.
+
+IDF v4 integration details
+- `make/targets/ESP32_IDF4.make` (line 38) writes `-DESP_IDF_VERSION_MAJOR=4` into the generated CMake file.
+- `make/targets/ESP32_IDF4.make` (lines 54-56) copies files from `targets/esp32/IDF4/` (`sdkconfig`, `partitions.csv`, `CMakeLists.txt`).
+
+The chain in one line:
+- `boards/ESP32C3_IDF4.py` -> `scripts/get_makefile_decls.py` -> `Makefile` includes -> `make/family/ESP32_IDF4.make` -> `make/targets/ESP32_IDF4.make`.
+
+Toolchain paths note:
+- The makefiles assume the ESP-IDF v4 environment is already active (from `export.sh`/`IDF_PATH`) so `idf.py` and tools are on `PATH`. The version tie-in is via the `ESP32_IDF4` family and `targets/esp32/IDF4/` configs.
+
+---
+
+## Appendix 2 - Espruino Makefile Targets for ESP32-C3
+
+This appendix documents the ESP32-C3-related targets and variables in
+`make/targets/ESP32_IDF4.make`, with code excerpts and short explanations.
+
+Overall workflow:
+1. Generate `CMakeLists.txt` with `$(CMAKEFILE)`.
+2. Build the firmware binary with `$(PROJ_NAME).bin`.
+3. Package the firmware with `$(ESP_ZIP)`.
+4. Flash the firmware with `flash`, or flash and monitor with `flashmonitor`.
+
+### 1. Chip Selection and Defaults
+
+Code (from `make/targets/ESP32_IDF4.make`):
+
+```makefile
+ESP_ZIP     = $(PROJ_NAME).tgz
+
+CMAKEFILE = $(BINDIR)/main/CMakeLists.txt
+# 'gen' has a relative path - get rid of it and add it manually
+INCLUDE_WITHOUT_GEN = $(subst -Igen,,$(INCLUDE)) -I$(ROOT)/gen
+
+ifeq ($(CHIP),ESP32C3)
+	SDKCONFIG = sdkconfig_c3
+	FMW_BIN_NAME = espruino-esp32c3
+	PORT ?= /dev/ttyACM0
+else
+	ifeq ($(CHIP),ESP32)
+		SDKCONFIG = sdkconfig
+		FMW_BIN_NAME = espruino-esp32
+		PORT ?= /dev/ttyUSB0
+	else
+		ifeq ($(CHIP),ESP32S3)
+			SDKCONFIG = sdkconfig_s3
+			FMW_BIN_NAME = espruino-esp32s3
+			PORT ?= /dev/ttyUSB0
+		else
+			$(error Unknown ESP32 chip)
+		endif
+	endif
+endif
+```
+
+Explanation:
+- Configures build settings based on the target ESP32 chip:
+  - ESP32-C3: uses `sdkconfig_c3`, binary name `espruino-esp32c3`, and port `/dev/ttyACM0`.
+  - ESP32: uses `sdkconfig`, binary name `espruino-esp32`, and port `/dev/ttyUSB0`.
+  - ESP32-S3: uses `sdkconfig_s3`, binary name `espruino-esp32s3`, and port `/dev/ttyUSB0`.
+- Raises an error for unknown chips.
+
+Key variables:
+- `ESP_ZIP`: name of the compressed firmware archive.
+- `CMAKEFILE`: path to the `CMakeLists.txt` file being generated.
+- `INCLUDE_WITHOUT_GEN`: include directories with adjustments for the build.
+- `SDKCONFIG`: the correct `sdkconfig` file for the target chip (ESP32-C3, ESP32, or ESP32-S3).
+- `FMW_BIN_NAME`: firmware binary name based on the target chip.
+- `PORT`: serial port for flashing the firmware (defaults to `/dev/ttyACM0` for ESP32-C3).
+
+### 2. Generate CMakeLists.txt ($(CMAKEFILE))
+
+Code (from `make/targets/ESP32_IDF4.make`):
+
+```makefile
+$(CMAKEFILE):
+	@mkdir -p $(BINDIR)/main # create directory if it doesn't exist
+	@echo "MAKE CMAKEFILE"
+	@echo "$(INCLUDE_WITHOUT_GEN)"
+	@echo "idf_component_register(" > $(CMAKEFILE)
+	@echo "						 SRCS" >> $(CMAKEFILE)
+	@echo "						$(patsubst %,\"$(ROOT)/%\"\n						,$(SOURCES))" >> $(CMAKEFILE)
+	@echo "						 INCLUDE_DIRS" >> $(CMAKEFILE)
+	@echo "						$(patsubst -I%,\"%/\"\n						,$(INCLUDE_WITHOUT_GEN))" >> $(CMAKEFILE)
+	@echo "						 )" >> $(CMAKEFILE)
+	@echo "" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_TARGET} PUBLIC -DESP_IDF_VERSION_MAJOR=4)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_TARGET} PUBLIC $(DEFINES))" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_TARGET} PUBLIC -Og -fno-strict-aliasing -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -fgnu89-inline  -nostdlib -MMD -MP -Wno-enum-compare)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-pointer-sign)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-implicit-int)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-maybe-uninitialized)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-return-type)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-switch)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-unused-variable)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-unused-function)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-unused-but-set-variable)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-cast-function-type)" >> $(CMAKEFILE)
+	@echo "target_compile_options($$""{COMPONENT_LIB} PRIVATE -Wno-format)" >> $(CMAKEFILE)
+```
+
+Explanation:
+- Creates the `$(BINDIR)/main` directory if it does not exist.
+- Generates the `CMakeLists.txt` file required by ESP-IDF.
+- Registers source files (`SRCS`) and include directories (`INCLUDE_DIRS`) for the project.
+- Defines compilation options, including optimizations and ignored warnings.
+- Note: `INCLUDE_WITHOUT_GEN` strips `-Igen` so the generated include path can be added explicitly.
+
+This ensures the ESP-IDF build environment is prepared before compiling.
+
+### 3. Build Firmware Binary ($(PROJ_NAME).bin)
+
+Code (from `make/targets/ESP32_IDF4.make`):
+
+```makefile
+$(PROJ_NAME).bin: $(CMAKEFILE) $(PLATFORM_CONFIG_FILE) $(PININFOFILE).h $(PININFOFILE).c $(WRAPPERFILE)
+	$(Q)cp ${ROOT}/targets/esp32/IDF4/${SDKCONFIG} $(BINDIR)/sdkconfig
+	$(Q)cp ${ROOT}/targets/esp32/IDF4/CMakeLists.txt $(BINDIR)
+	$(Q)cp ${ROOT}/targets/esp32/IDF4/partitions.csv $(BINDIR)
+	cd $(BINDIR) && idf.py build
+	$(Q)cp $(BINDIR)/build/espruino.bin $(PROJ_NAME).bin
+```
+
+Explanation:
+- Builds the Espruino firmware binary.
+- Copies the `sdkconfig`, `CMakeLists.txt`, and `partitions.csv` files into the build directory.
+- Runs the ESP-IDF build process (`idf.py build`).
+- Copies the generated binary (`espruino.bin`) to the project output path as `$(PROJ_NAME).bin`.
+- Note: ESP-IDF outputs into `$(BINDIR)/build/` and this target copies it to the Espruino naming convention.
+
+Summary of dependencies:
+- `$(CMAKEFILE)`: ESP-IDF project glue (CMakeLists.txt).
+- `$(PLATFORM_CONFIG_FILE)`: platform-specific configuration.
+- `$(PININFOFILE).h/.c`: pin mappings and peripheral setup.
+- `$(WRAPPERFILE)`: generated JS-to-C bindings for Espruino APIs.
+
+### 4. Package Firmware Archive ($(ESP_ZIP))
+
+Code (from `make/targets/ESP32_IDF4.make`):
+
+```makefile
+$(ESP_ZIP): $(PROJ_NAME).bin
+	$(Q)rm -rf $(PROJ_NAME)
+	$(Q)mkdir -p $(PROJ_NAME)
+	$(Q)cp $(PROJ_NAME).bin $(PROJ_NAME)/$(FMW_BIN_NAME).bin
+	$(Q)cp $(BINDIR)/build/partition_table/partition-table.bin $(PROJ_NAME)/partition-table.bin
+	$(Q)cp $(BINDIR)/build/bootloader/bootloader.bin $(PROJ_NAME)/bootloader.bin
+	$(Q)cp targets/esp32/README_flash.txt $(PROJ_NAME)
+	$(Q)cp targets/esp32/README_flash_C3.txt $(PROJ_NAME)
+	$(Q)cp targets/esp32/README_flash_S3.txt $(PROJ_NAME)
+	$(Q)$(TAR) -zcf $(ESP_ZIP) $(PROJ_NAME) --transform='s/$(BINDIR)\///g'
+	@echo "Created $(ESP_ZIP)"
+```
+
+Explanation:
+- Packages the built firmware into a `.tgz` archive.
+- Includes the firmware binary (`$(PROJ_NAME).bin` renamed to `$(FMW_BIN_NAME).bin`).
+- Includes the partition table and bootloader binaries.
+- Includes flashing instructions (`README_flash*.txt`).
+- Note: `$(FMW_BIN_NAME)` varies by chip (ESP32C3/ESP32S3), and `--transform` removes `$(BINDIR)` from archive paths.
+
+This bundles all files required for deployment into a single archive.
+
+### 5. Flash Firmware (flash)
+
+Code (from `make/targets/ESP32_IDF4.make`):
+
+```makefile
+flash: $(PROJ_NAME).bin
+	cd $(BINDIR) && idf.py flash -p $(PORT)
+```
+
+Explanation:
+- Flashes the firmware binary to the ESP32-C3 device.
+- Uses the ESP-IDF `idf.py flash` command with the selected serial port (`$(PORT)`).
+- Note: `$(PORT)` has defaults set in the ESP32_IDF4 makefile based on chip.
+- Note: `idf.py flash` uses the bootloader and partition outputs from `$(BINDIR)/build/`.
+
+### 6. Flash and Monitor (flashmonitor)
+
+Code (from `make/targets/ESP32_IDF4.make`):
+
+```makefile
+flashmonitor: $(PROJ_NAME).bin
+	cd $(BINDIR) && idf.py flash -p $(PORT)
+	cd $(BINDIR) && idf.py monitor -p $(PORT)
+```
+
+Explanation:
+- Combines the `flash` target with `idf.py monitor`.
+- Flashes the firmware and starts a terminal interface to view the device output.
+- Useful for debugging, as it allows immediate feedback from the device.
+- Note: exit the monitor with Ctrl-].

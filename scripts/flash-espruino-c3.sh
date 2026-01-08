@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
 set -e
 
-# Overrides (args take priority over env vars).
+# Flash an Espruino ESP32-C3 build using an ESP-IDF esptool.
+# Usage: flash-espruino-c3.sh [PORT] [ROOT]
+#   PORT: serial device node for the ESP32-C3 (e.g. /dev/ttyUSB0).
+#   ROOT: Espruino development worktree containing the built firmware (bin/build).
+# Defaults (overridable via env): ESPRUINO_PORT, ESPRUINO_ROOT, ESPRUINO_IDF, ESPRUINO_PY
+#
+# Useage with Environment variables (Ubuntu shell):
+# - Set for one command use NAME=value (then run the script)
+#    eg  ESPRUINO_PORT=/dev/ttyUSB1 ESPRUINO_ROOT=/home/simon/dev/espruino/ESP32-Legacy-Build ./scripts/flash-espruino-c3.sh
+# - Set for your session use export NAME=value (then run the script)
+#     export ESPRUINO_PORT=/dev/ttyUSB1
+#     export ESPRUINO_ROOT=/home/simon/dev/espruino/ESP32-Legacy-Build
+#     ./scripts/flash-espruino-c3.sh
+
+# Command-line args override env vars, and env vars override built-in defaults.
+
+# Overrides (args take priority over env vars) using Bash “fallback” assignments.
 PORT="${1:-${ESPRUINO_PORT:-/dev/ttyUSB0}}"
 ROOT="${2:-${ESPRUINO_ROOT:-/home/simon/dev/espruino/Espruino-fix-2649}}"
 BUILD="$ROOT/bin/build"
