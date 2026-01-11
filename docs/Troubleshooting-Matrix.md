@@ -67,6 +67,7 @@ It is intended as a **fast diagnostic reference** when something breaks.
 | `/dev/ttyUSB0 exists but unreadable` | Permissions | `ls -l /dev/ttyUSB0` | `sudo chgrp dialout /dev/ttyUSB0` |
 | `idf.py: port not readable` | User not in group | `groups` | Re-login or manual chmod |
 | `udevadm reload` fails | No udev in WSL | Error output | Ignore, use manual chmod |
+| `python: command not found` when monitoring | IDF env not sourced | `which python` | `source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh` or install `python-is-python3` |
 
 ---
 

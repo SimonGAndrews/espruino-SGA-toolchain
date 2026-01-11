@@ -30,6 +30,14 @@ the paths in place.
 2) Follow `docs/workflow-structure.md` for the build/flash flow.
 3) Use `docs/Troubleshooting-Matrix.md` if you hit errors.
 
+Minimal daily loop (after setup):
+
+    source <TOOLCHAIN_ROOT>/scripts/env.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
+    cd "$ESPRUINO_ROOT" && make BOARD=ESP32C3_IDF4
+    <TOOLCHAIN_ROOT>/scripts/flash-espruino-c3.sh
+    <TOOLCHAIN_ROOT>/scripts/monitor-espruino-c3.sh /dev/ttyUSB0 "$ESPRUINO_ROOT"
+
 ## Documentation index
 
 | Document | Purpose |

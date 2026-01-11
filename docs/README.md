@@ -24,6 +24,14 @@ or workflows to the public Espruino repository.
 | `scripts/flash-espruino-c3.sh` | Flash helper for ESP32-C3 builds using esptool from IDF v4.4.8. |
 | `scripts/monitor-espruino-c3.sh` | ESP-IDF monitor helper for ESP32-C3 builds. |
 
+Minimal daily loop (after setup):
+
+    source <TOOLCHAIN_ROOT>/scripts/env.sh
+    source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh
+    cd "$ESPRUINO_ROOT" && make BOARD=ESP32C3_IDF4
+    <TOOLCHAIN_ROOT>/scripts/flash-espruino-c3.sh
+    <TOOLCHAIN_ROOT>/scripts/monitor-espruino-c3.sh /dev/ttyUSB0 "$ESPRUINO_ROOT"
+
 Status:
 
  - A fully validated Espruino toolchain under WSL

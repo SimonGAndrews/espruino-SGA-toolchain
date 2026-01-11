@@ -307,7 +307,18 @@ Note: `ESPRUINO_ROOT` is set by `scripts/env.sh`.
     cd "$ESPRUINO_ROOT"
     make BOARD=ESP32C3_IDF4
 
+Switching worktrees quickly:
+
+    export ESPRUINO_ROOT=~/dev/espruino/Espruino-fix-2649
+    cd "$ESPRUINO_ROOT"
+    make BOARD=ESP32C3_IDF4
+
 ### Step 3: Flash Firmware
+
+If you are unsure which port to use, list devices before flashing:
+
+    ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+    dmesg | tail
 
     "$TOOLCHAIN_ROOT/scripts/flash-espruino-c3.sh"
 
@@ -322,6 +333,13 @@ If you need to override defaults:
     "$TOOLCHAIN_ROOT/scripts/monitor-espruino-c3.sh" \
       /dev/ttyUSB0 \
       "$ESPRUINO_ROOT"
+
+Expected output after a successful flash includes a boot banner and Espruino prompt, for example:
+
+    ets Jun  8 2016 00:22:57
+    ...
+    Espruino 2vXX
+    >
 
 ---
 
@@ -342,6 +360,8 @@ respects `TOOLCHAIN_ROOT` if set.
 Notes:
 
 * Use a third argument or set `ESPRUINO_BAUD` to override the baud rate.
+* The monitor script calls `python` from the current shell; source the IDF
+  script first so `python` is available (or ensure `python` resolves to Python 3).
 * Exit with `Ctrl+]`.
 * If you hit permissions issues, fix device permissions as in Section 7.
 
