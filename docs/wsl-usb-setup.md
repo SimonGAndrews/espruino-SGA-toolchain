@@ -101,7 +101,23 @@ Persisted:
 |-------------------------------------|------------------------------------------------------|
 |98f6bd85-54a3-4a6b-9ee2-76696b37ee9e |  USB Serial Device (COM3), USB JTAG/serial debug unit|
 
-`In the list output, the Persisted section shows devices that usbipd has a saved entry for (by GUID), typically from an auto‑attach configuration. It means usbipd will try to re‑attach that device to WSL when it’s connected and WSL is running, even if it isn’t currently connected. It does not mean the device is attached right now—current attachment state is shown in the Connected section.`
+#### Persisted entries
+In the list output, the Persisted section shows devices that usbipd has a saved entry for (by GUID), 
+Persisted entries are Windows device identities, not USB ports. Think of them as “This kind of device was shared before”.
+
+These:
+ - Do NOT need to be physically connected
+ - Are remembered by GUID, not BUSID
+ - Represent previously shared Windows device identities
+ - Are stored across reboots
+ - Can block re-sharing when the device reappears
+
+Persisted entries allows auto-reattachment — but it can cause problems with:
+ - ESP32 USB-JTAG
+ - CH340 / CP210x
+ - Devices that re-enumerate or change interfaces
+
+ (see 4.3 below for clean recovery of persisted devices when issues occur)
 
 ---
 
@@ -143,14 +159,32 @@ If needed:
 
 To remove a persisted device, use the GUID shown under Persisted:
 
-    usbipd detach --guid <GUID>
+    usbipd unbind --guid <GUID>
 
-That removes the persisted auto‑attach entry.
-If you also want to stop sharing the device entirely:
-
-    usbipd unbind --busid <BUSID>
+When to unbind vs detach (important distinction)
+|Command|	Use when                           |
+|-------|--------------------------------------|
+|detach	| Device is currently attached to WSL
+|unbind	| You want to forget the device completely
 
 ---
+
+### 4.3 Clean recovery sequence (recommended for ESP32 / JTAG)
+
+This is the safest reset sequence when things get weird:
+
+    wsl --shutdown
+    usbipd unbind --guid <GUID>
+    net stop usbipd
+    net start usbipd
+
+Then 
+   - Unplug the USB device - Wait 3–5 seconds - Plug it back in
+   - Verify the device is visible and unshared - >usbipd list  (powershell)
+   - Bind the device (export it) - >usbipd bind --busid <id eg 1-8>      (powershell)
+   - reopen vscode for WSL (Restarts WSL)
+   - Attach the device to WSL - >usbipd attach --wsl --busid <id eg 1-8>   (PowerShell)
+   - Verify inside WSL - >lsusb (vscode terminal)
 
 ## 5. Verifying USB Devices Inside WSL
 

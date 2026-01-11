@@ -22,6 +22,7 @@ or workflows to the public Espruino repository.
 | `scripts/idf4.4.8.sh` | Activate ESP-IDF v4.4.8 (exports `IDF_PATH` and environment). |
 | `scripts/idf5.2.2.sh` | Activate ESP-IDF v5.2.2 (installed but not used in the current workflow). |
 | `scripts/flash-espruino-c3.sh` | Flash helper for ESP32-C3 builds using esptool from IDF v4.4.8. |
+| `scripts/monitor-espruino-c3.sh` | ESP-IDF monitor helper for ESP32-C3 builds. |
 
 Status:
 
@@ -35,13 +36,13 @@ Status:
 
  - Explicit decision records (VS Code plugin, JTAG, monitoring)
 
+ - ESP-IDF monitor standardised for serial access
+
  - Clean handover-ready documentation that will stand the test of time
 
  - Most importantly, you’ve turned what could have been a fragile “it works on my machine” setup into a durable engineering baseline.
 
 Natural next steps would be:
-
- - Serial monitor finalisation / REPL stability
 
  - ESP32-S3 bring-up
 

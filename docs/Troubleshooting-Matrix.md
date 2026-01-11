@@ -88,7 +88,7 @@ It is intended as a **fast diagnostic reference** when something breaks.
 | `No such file or directory: bootloader.bin` | Wrong path | `find bin -name bootloader.bin` | Fix flash script |
 | Flash starts then resets | Wrong baud / reset | esptool output | Lower baud or manual reset |
 | `Chip not responding` | Boot mode wrong | esptool retry | Hold BOOT during connect |
-| Flash succeeds but no output | Console mismatch | Serial monitor | Check baud (115200) |
+| Flash succeeds but no output | Console mismatch | ESP-IDF monitor | Check baud (115200) |
 
 ---
 
@@ -123,7 +123,7 @@ When things are badly broken:
 3. Open fresh WSL terminal
 4. `source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh`
 5. Flash via esptool script
-6. Monitor via `picocom`
+6. Monitor via `<TOOLCHAIN_ROOT>/scripts/monitor-espruino-c3.sh`
 
 ---
 ## 12. Shell Stability & Recovery (Critical for WSL + VS Code)

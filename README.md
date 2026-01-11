@@ -45,12 +45,18 @@ the paths in place.
 
 | Script | Purpose |
 | --- | --- |
+| `scripts/env.sh` | Set `TOOLCHAIN_ROOT` and `ESPRUINO_ROOT` for the current shell. |
 | `scripts/idf4.4.8.sh` | Activate ESP-IDF v4.4.8 (exports `IDF_PATH` and environment). |
 | `scripts/idf5.2.2.sh` | Activate ESP-IDF v5.2.2 (installed but not used in the current workflow). |
 | `scripts/flash-espruino-c3.sh` | Flash helper for ESP32-C3 builds using esptool from IDF v4.4.8. |
+| `scripts/monitor-espruino-c3.sh` | Run the ESP-IDF monitor against the built ESP32-C3 ELF. |
 
 Notes:
 
+- `scripts/env.sh` sets defaults and prints the resolved paths.
 - `scripts/flash-espruino-c3.sh` supports overrides via `ESPRUINO_PORT`,
   `ESPRUINO_ROOT`, `ESPRUINO_IDF`, and `ESPRUINO_PY`.
+- When `ESPRUINO_ROOT` is set (via `env.sh`), flash can be run with no args.
+- `scripts/monitor-espruino-c3.sh` supports `TOOLCHAIN_ROOT`, `ESPRUINO_PORT`,
+  `ESPRUINO_ROOT`, and `ESPRUINO_BAUD`.
 - `scripts/idf4.4.8.sh` and `scripts/idf5.2.2.sh` respect `IDF_PATH` if set.

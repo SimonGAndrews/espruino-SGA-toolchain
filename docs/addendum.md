@@ -110,7 +110,7 @@ The VS Code ESP-IDF extension may be reconsidered **later**, once:
 
 ---
 
-## C. Serial Monitor Status (Explicitly Deferred)
+## C. Serial Monitor Status (Standardised)
 **Suggested placement:**  
 Main README → Workflow Status  
 or  
@@ -118,23 +118,8 @@ USB / WSL Reference → after Flashing section
 
 ### C.1 Status
 
-Serial monitoring is **intentionally deferred**.
-
-Build and flash workflows are validated and stable; monitoring is still under evaluation due to:
-
-- USB-JTAG instability under WSL
-- CDC device enumeration inconsistency
-- VS Code terminal sensitivity during serial attach
-
----
-
-### C.2 Current Position
-
-- `picocom` works in principle with USB-Serial adapters
-- USB-JTAG CDC is unreliable under WSL
-- Final REPL workflow will be documented once stability is confirmed
-
-This is a **known open item**, not an omission.
+Serial monitoring is standardised on the ESP-IDF monitor via
+`scripts/monitor-espruino-c3.sh`.
 
 ---
 

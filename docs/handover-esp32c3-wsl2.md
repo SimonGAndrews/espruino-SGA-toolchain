@@ -84,8 +84,7 @@ They must be sourced, not executed:
 
 ### Serial Tools
 
-- `picocom` installed for console access
-- `idf.py monitor` available but not yet standardized
+- ESP-IDF monitor standardised via `scripts/monitor-espruino-c3.sh`
 
 ---
 
