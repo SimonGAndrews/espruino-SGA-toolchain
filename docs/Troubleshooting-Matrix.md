@@ -66,6 +66,7 @@ It is intended as a **fast diagnostic reference** when something breaks.
 | `/dev/ttyUSB0` missing | Driver not bound | `lsusb`, `dmesg` | Use CH340 / CP210x |
 | `/dev/ttyUSB0 exists but unreadable` | Permissions | `ls -l /dev/ttyUSB0` | `sudo chgrp dialout /dev/ttyUSB0` |
 | `idf.py: port not readable` | User not in group | `groups` | Re-login or manual chmod |
+| `device reports readiness to read but returned no data` | Port already in use | `lsof /dev/ttyUSB0` | Close other monitor/terminal using the port |
 | `udevadm reload` fails | No udev in WSL | Error output | Ignore, use manual chmod |
 | `python: command not found` when monitoring | IDF env not sourced | `which python` | `source <TOOLCHAIN_ROOT>/scripts/idf4.4.8.sh` or install `python-is-python3` |
 

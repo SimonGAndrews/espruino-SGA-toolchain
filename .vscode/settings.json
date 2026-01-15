@@ -1,4 +1,6 @@
 {
-    "idf.pythonInstallPath": "/usr/bin/python",
-    "idf.port": "/dev/ttyUSB0"
+  "idf.espIdfPath": "/home/simon/dev/esp/esp-idf-v4.4.8",
+  "idf.toolsPath": "/home/simon/.espressif",
+  "idf.pythonInstallPath": "/usr/bin/python3",
+  "idf.port": "/dev/ttyUSB0"
 }

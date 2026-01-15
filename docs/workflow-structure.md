@@ -271,11 +271,39 @@ WSL may not run a full udevd, so permissions may need to be fixed manually:
 
 The user must be a member of the dialout group.
 
-(see ~/docs/wsl-usb-setup.md for details of managing USB connections )
+(see `docs/wsl-usb-setup.md` for details of managing USB connections)
+
+---
+## 8. Monitoring (Standard)
+
+Serial monitoring is standardised on the ESP-IDF monitor via the helper script.
+
+### 8.1 ESP-IDF monitor (standard)
+
+Use the helper script to launch the ESP-IDF monitor against the ELF produced
+by the Espruino build. It sources the IDF environment automatically and
+respects `TOOLCHAIN_ROOT` if set.
+
+    <TOOLCHAIN_ROOT>/scripts/monitor-espruino-c3.sh \
+      /dev/ttyUSB0 \
+      ~/dev/espruino/Espruino-fix-2649
+
+Notes:
+
+* Use a third argument or set `ESPRUINO_BAUD` to override the baud rate.
+* The script can be run from any directory; it resolves the worktree path itself.
+* The monitor script calls `python` from the current shell; source the IDF
+  script first so `python` is available (or ensure `python` resolves to Python 3).
+* `idf.py monitor` uses `--monitor-baud` for IDF4; the helper script runs
+  `idf_monitor.py` directly to avoid project-root requirements.
+* Exit with `Ctrl+]`.
+* If you hit permissions issues, fix device permissions as in Section 7.
+* If you get `device reports readiness to read but returned no data`, another
+  monitor likely has the port open; close it or check with `lsof /dev/ttyUSB0`.
 
 ---
 
-## 8. Daily Development Workflow
+## 9. Daily Development Workflow
 
 This is the recommended daily loop.
 
@@ -283,7 +311,7 @@ Optional (one-time per terminal). Sets toolchain paths for the current shell ses
 
     source <TOOLCHAIN_ROOT>/scripts/env.sh
 
-    Eg source /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/env.sh
+    Example: source /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/env.sh
 
 This is kept as a manual step so the active paths are visible each session,
 making it easier to notice changes or fix breakages.
@@ -320,7 +348,15 @@ If you are unsure which port to use, list devices before flashing:
     ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
     dmesg | tail
 
+With `env.sh` sourced (sets `TOOLCHAIN_ROOT` and `ESPRUINO_ROOT`):
+
     "$TOOLCHAIN_ROOT/scripts/flash-espruino-c3.sh"
+
+Without `env.sh`, call the script by absolute path and pass the worktree:
+
+    /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/flash-espruino-c3.sh \
+      /dev/ttyUSB0 \
+      /home/simon/dev/espruino/Espruino-fix-2649
 
 If you need to override defaults:
 
@@ -330,9 +366,19 @@ If you need to override defaults:
 
 ### Step 4: Open Serial Monitor
 
+With `env.sh` sourced (sets `TOOLCHAIN_ROOT` and `ESPRUINO_ROOT`):
+
     "$TOOLCHAIN_ROOT/scripts/monitor-espruino-c3.sh" \
       /dev/ttyUSB0 \
       "$ESPRUINO_ROOT"
+
+The script can be run from any directory; it resolves the worktree path itself.
+
+Without `env.sh`, call the script by absolute path and pass the worktree:
+
+    /home/simon/dev/espruino/espruino-SGA-toolchain/scripts/monitor-espruino-c3.sh \
+      /dev/ttyUSB0 \
+      /home/simon/dev/espruino/Espruino-fix-2649
 
 Expected output after a successful flash includes a boot banner and Espruino prompt, for example:
 
@@ -341,29 +387,11 @@ Expected output after a successful flash includes a boot banner and Espruino pro
     Espruino 2vXX
     >
 
----
+If you see the ROM boot line but no Espruino prompt, try the USB-Serial-JTAG port:
 
-## 9. Monitoring (Standard)
-
-Serial monitoring is standardised on the ESP-IDF monitor via the helper script.
-
-### 9.1 ESP-IDF monitor (standard)
-
-Use the helper script to launch the ESP-IDF monitor against the ELF produced
-by the Espruino build. It sources the IDF environment automatically and
-respects `TOOLCHAIN_ROOT` if set.
-
-    <TOOLCHAIN_ROOT>/scripts/monitor-espruino-c3.sh \
-      /dev/ttyUSB0 \
-      ~/dev/espruino/Espruino-fix-2649
-
-Notes:
-
-* Use a third argument or set `ESPRUINO_BAUD` to override the baud rate.
-* The monitor script calls `python` from the current shell; source the IDF
-  script first so `python` is available (or ensure `python` resolves to Python 3).
-* Exit with `Ctrl+]`.
-* If you hit permissions issues, fix device permissions as in Section 7.
+    "$TOOLCHAIN_ROOT/scripts/monitor-espruino-c3.sh" \
+      /dev/ttyACM0 \
+      "$ESPRUINO_ROOT"
 
 ---
 
